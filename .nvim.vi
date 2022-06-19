@@ -1,0 +1,210 @@
+call plug#begin("~/.vim/plugged")
+	Plug 'morhetz/gruvbox'
+	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+	" Airline statusbar
+	Plug 'vim-airline/vim-airline'
+	Plug 'vim-airline/vim-airline-themes'
+
+	" File navigation
+	Plug 'scrooloose/nerdtree'
+
+	" Fuzzy searching
+	Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+	Plug 'junegunn/fzf.vim'
+
+	" Go tooling
+	Plug 'fatih/vim-go'
+
+	" Git tooling
+	Plug 'tpope/vim-fugitive'
+
+	" Bracket closing
+	Plug 'Raimondi/delimitMate'
+
+	" Commeting code
+	Plug 'tpope/vim-commentary'
+
+	" LSP support
+	Plug 'neovim/nvim-lspconfig'
+
+	" Autocomplete support
+	Plug 'hrsh7th/nvim-cmp'
+
+	" Complete support for LSP
+	Plug 'hrsh7th/cmp-nvim-lsp'
+
+	" Show signature when in insert mode
+	Plug 'ray-x/lsp_signature.nvim'
+
+	" Snippet manager
+	Plug 'SirVer/ultisnips'
+
+	" RgRaw
+	Plug 'jZhangTk/vim-agriculture'
+
+	Plug 'tpope/vim-unimpaired'
+	Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+call plug#end()
+
+" Disable neovim's cursor
+set guicursor=
+
+" True color support
+set termguicolors
+
+" Highlight current line
+set cursorline
+
+" Show line numbers
+set number
+
+" Disable gruvbox's bold text
+let g:gruvbox_bold=1
+
+" I prefer soft colors
+let g:gruvbox_contrast_dark='soft'
+
+" Use colorscheme
+colorscheme gruvbox
+
+" Detect file types
+filetype plugin on
+
+" Enable color column 
+set colorcolumn=79
+
+" Auto load when file has been modified externally
+set autoread
+
+" Highlight searches
+set hlsearch
+
+" Show all currently open buffers
+let g:airline#extensions#tabline#enabled = 1
+
+" Use minimalist airline theme
+let g:airline_theme='minimalist'
+
+" Enabl pretty fonts for airline
+let g:airline_powerline_fonts = 1
+
+" Remove all binds from space
+nnoremap <SPACE> <Nop>
+
+" Make space as the leader key
+let mapleader=" "
+
+" Toggle NERDTree
+nnoremap <leader>N :NERDTreeToggle<CR>
+
+" Disable highlight
+nnoremap \ :noh<return>
+
+" Close buffer
+noremap <leader>bc :bd<cr>
+
+" Go to previous buffer
+noremap <leader>p :bprev<cr>
+
+" Go to next buffer
+noremap <leader>n :bnext<cr>
+
+" Show all currently open buffers
+nmap <leader>b :Buffers<CR>
+
+" Show all files
+nmap <leader>f :Files<CR>
+
+"Find line in current buffer
+nmap <leader>lb :BLines<CR>
+
+" Auto close when in insert mode
+let delimitMate_autoclose = 1
+
+set list
+set listchars=tab:>-
+
+" We only want to use vim-go for GoTest and etc.
+let g:go_pls_enabled = 0
+
+augroup go
+	autocmd! go
+
+	autocmd FileType go nnoremap <buffer> <leader>ta :GoAddTags<cr>
+	autocmd FileType go nnoremap <buffer> <leader>tt :GoTest<cr>
+	autocmd FileType go nnoremap <buffer> <leader>tf :GoTestFunc<cr>
+	autocmd FileType go nnoremap <buffer> <leader>tc :GoCoverageToggle<cr>
+augroup end
+
+lua << EOF
+local nvim_lsp = require('lspconfig')
+
+require('nvim-treesitter.configs').setup {
+	highlight = {
+		enable = true
+       }
+}
+local on_attach = function(client, bufnr)
+	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+	local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+	buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+	local opts = { noremap=true, silent=true }
+
+	buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+	buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+	buf_set_keymap('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+	buf_set_keymap('n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+	buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+	buf_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+	buf_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
+end
+
+local cmp = require('cmp')
+cmp.setup{
+	mapping = {
+		['<CR>'] = cmp.mapping.confirm({ select = true }),
+    		['<C-y>'] = cmp.config.disable,
+		["<C-n>"] = cmp.mapping(function(fallback)
+			if cmp.visible() then
+				cmp.select_next_item()
+			else
+				fallback() 
+	      		end
+		end, { "i", "s" }),
+		["<C-p>"] = cmp.mapping(function(fallback)
+			if cmp.visible() then
+				cmp.select_prev_item()
+			else
+    				fallback()
+	      		end
+		end, { "i", "s" })
+	},
+	snippet = {
+		expand = function(args)
+			vim.fn["UltiSnips#Anon"](args.body)
+		end
+	},
+	sources = cmp.config.sources({
+		{ name = 'nvim_lsp' }, 
+		{ name = 'ultisnips' },
+	})
+}
+
+require('lsp_signature').setup({})
+
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+
+nvim_lsp.gopls.setup{
+	on_attach = on_attach,
+	capabilities = capabilities,
+	settings = {
+		gopls = {
+			buildFlags = { '-tags='}
+		}
+	}
+}
+EOF
