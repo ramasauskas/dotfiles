@@ -50,6 +50,9 @@ call plug#end()
 " Disable neovim's cursor
 set guicursor=
 
+" Disable swap files
+set noswapfile
+
 " True color support
 set termguicolors
 
