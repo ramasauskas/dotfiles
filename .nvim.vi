@@ -87,7 +87,9 @@ set hlsearch
 let g:airline#extensions#tabline#enabled = 1
 
 " Use minimalist airline theme
-let g:airline_theme='minimalist'
+let g:airline_theme='gruvbox_material'
+
+let g:go_def_mapping_enabled=0 
 
 " Enabl pretty fonts for airline
 let g:airline_powerline_fonts = 1
