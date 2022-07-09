@@ -22,3 +22,4 @@ setw -g mode-keys vi
 set -g status-keys vi
 
 set -as terminal-features ",xterm-256color"
+set -as default-terminal "tmux-256color"

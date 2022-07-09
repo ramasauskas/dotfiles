@@ -1,5 +1,4 @@
 call plug#begin("~/.vim/plugged")
-	Plug 'morhetz/gruvbox'
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 	" Airline statusbar
@@ -8,6 +7,8 @@ call plug#begin("~/.vim/plugged")
 
 	" File navigation
 	Plug 'scrooloose/nerdtree'
+
+	Plug 'sainnhe/gruvbox-material'
 
 	" Fuzzy searching
 	Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
@@ -62,14 +63,13 @@ set cursorline
 " Show line numbers
 set number
 
-" Disable gruvbox's bold text
-let g:gruvbox_bold=1
-
-" I prefer soft colors
-let g:gruvbox_contrast_dark='soft'
+" Gruv
+let g:gruvbox_material_enable_bold=1
+let g:gruvbox_material_enable_italic=1
+let g:gruvbox_material_background='soft'
 
 " Use colorscheme
-colorscheme gruvbox
+colorscheme gruvbox-material
 
 " Detect file types
 filetype plugin on
@@ -114,13 +114,22 @@ noremap <leader>p :bprev<cr>
 noremap <leader>n :bnext<cr>
 
 " Show all currently open buffers
-nmap <leader>b :Buffers<CR>
+nmap <leader>B :Buffers<CR>
 
 " Show all files
 nmap <leader>f :Files<CR>
 
+autocmd FileType vue setlocal shiftwidth=3 softtabstop=2 expandtab
+autocmd FileType javascript setlocal shiftwidth=3 softtabstop=2 expandtab
+autocmd FileType config.js setlocal shiftwidth=3 softtabstop=2 expandtab
+autocmd FileType html setlocal shiftwidth=3 softtabstop=2 expandtab
+autocmd FileType css setlocal shiftwidth=3 softtabstop=2 expandtab
+
 "Find line in current buffer
 nmap <leader>lb :BLines<CR>
+
+"Find line in all buffers
+nmap <leader>ll :Lines<CR>
 
 " Auto close when in insert mode
 let delimitMate_autoclose = 1
@@ -161,6 +170,7 @@ local on_attach = function(client, bufnr)
 	buf_set_keymap('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
 	buf_set_keymap('n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
 	buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+	buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
 	buf_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
 	buf_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
 end
@@ -200,6 +210,8 @@ require('lsp_signature').setup({})
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+
+nvim_lsp.vuels.setup{}
 
 nvim_lsp.gopls.setup{
 	on_attach = on_attach,

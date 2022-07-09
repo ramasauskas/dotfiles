@@ -1,5 +1,6 @@
 export ZSH="$HOME/.oh-my-zsh"
 export TERM='xterm-256color'
+export PATH=$PATH:~/go/bin
 ZSH_THEME="robbyrussell"
 plugins=(
 	git
